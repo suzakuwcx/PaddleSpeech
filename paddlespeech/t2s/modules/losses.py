@@ -461,7 +461,8 @@ def stft(x,
          win_length=None,
          window='hann',
          center=True,
-         pad_mode='reflect'):
+         pad_mode='reflect',
+         clamp_eps=1e-7):
     """Perform STFT and convert to magnitude spectrogram.
     Args:
         x(Tensor): 
@@ -501,7 +502,7 @@ def stft(x,
     real = x_stft.real()
     imag = x_stft.imag()
 
-    return paddle.sqrt(paddle.clip(real**2 + imag**2, min=1e-7)).transpose(
+    return paddle.sqrt(paddle.clip(real**2 + imag**2, min=clamp_eps)).transpose(
         [0, 2, 1])
 
 
@@ -1501,13 +1502,15 @@ class MultiScaleSTFTLoss(nn.Layer):
                     fft_size=s.window_length,
                     hop_length=s.hop_length,
                     win_length=s.window_length,
-                    window=s.window_type)
+                    window=s.window_type,
+                    clamp_eps=1e-5)
                 y_mag = stft(
                     y.reshape([-1, y.shape[-1]]),
                     fft_size=s.window_length,
                     hop_length=s.hop_length,
                     win_length=s.window_length,
-                    window=s.window_type)
+                    window=s.window_type,
+                    clamp_eps=1e-5)
                 x_mag = x_mag.transpose([0, 2, 1])
                 y_mag = y_mag.transpose([0, 2, 1])
             elif isinstance(x, AudioSignal) and isinstance(y, AudioSignal):
